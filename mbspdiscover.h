@@ -22,4 +22,27 @@ char* multibsp_discover_print(multibsp_tree_node_t n);
 
 
 
+// start: array structure 
+
+#define INVALID_NODE -1
+typedef struct {
+  int index;
+  int next;
+  int level;
+} multibsp_array_node;
+
+// end: array structure 
+
+typedef multibsp_array_node* multibsp_array_node_t;
+
+// start: functions for serialize the tree in array
+multibsp_array_node_t multibsp_array_new(int size);
+char* multibsp_array_print(multibsp_array_node_t arr);
+multibsp_array_node_t multibsp_to_array(multibsp_tree_node_t , multibsp_array_node_t ) ;
+multibsp_array_node_t multibsp_get_level(multibsp_array_node_t , int ) ;
+multibsp_array_node_t multibsp_get_level_with_id(multibsp_array_node_t , int , int ) ;
+size_t*  multibsp_get_index_with_level_id(multibsp_array_node_t, int, int);
+// end : functions for serialize the tree in array
+
+
 /* end: TREE Structure module */

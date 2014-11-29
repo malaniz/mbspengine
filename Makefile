@@ -4,28 +4,20 @@ LUAINCLUDE=../lib/lua-5.2.3/src
 LUALIB=../lib/lua-5.2.3/src
 
 
-CC=gcc 
+CC=gcc -fdiagnostics-color=auto
 CFLAGS= -g -I $(MCBSPINCLUDE) -I $(LUAINCLUDE)
 LFLAGS=$(MCBSPLIB) -L $(LUALIB) -llua -ldl -pthread -lm -lrt -lhwloc
 OBJ= mbspengine.o mbspdiscover.o mbsputil.o
-OBJ2= test.o mbspdiscover.o mbsputil.o
-OBJ3= tree.o mbspdiscover.o mbsputil.o
+OBJ2= test_with_tree.o mbspdiscover.o mbsputil.o
 
 
 all: mbspengine
 
 tree: $(OBJ3) 
-	$(CC) $(OBJ3) $(LFLAGS) -o tree.exe
+	$(CC) $(OBJ2) $(LFLAGS) -o tree.exe
 
-tree.o: tree.c 
-	$(CC) $(CFLAGS) -c tree.c
-
-
-test: $(OBJ2) 
-	$(CC) $(OBJ2) $(LFLAGS) -o test.exe
-
-test.o: test.c 
-	$(CC) $(CFLAGS) -c test.c
+test_with_tree.o: test_with_tree.c 
+	$(CC) $(CFLAGS) -c test_with_tree.c
 
 
 

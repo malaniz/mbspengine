@@ -6,30 +6,8 @@
 #include "mbspdata.h"
 #include "mbspdiscover.h"
 
-#define N 1024
-
-#define NDEBUG
 #define MANUAL_AFFINITY 2
 
-
-double*              data = NULL;
-
-//int vtree[] = {0, 0, 2, 0, 1, 2, 3 };
-
-
-char* sarrayi(int v[], int length) 
-{
-  int i;
-  char* s = (char*) malloc (sizeof(char)*length);
-
-  sprintf(s, "[ ");
-  for (i=0; i<length; i++) {
-    sprintf(s, "%s %d ", s, v[i]);
-  }
-  sprintf(s, "%s ]", s);
-
-  return s;
-}
 char* sarrayt(size_t v[], int length) 
 {
   int i;
@@ -46,110 +24,73 @@ char* sarrayt(size_t v[], int length)
 
 
 
-double work(interval l)
+double engine(multibsp_array_node_t tree, int level, int parentid) 
 {
-  double  inprod = 0.0;
-  int     i;
-  for (i=l.start; i<l.end; i++) inprod += data[i]*data[i];
-  return inprod;
-}
 
-double reduce ( double values[] , int n) 
-{
-  int     i;
-  double  result;
+  size_t* pin; 
 
-  for (i=0; i<n; i++) result += values[i];
-}
-
-interval partition(interval l, int p, int n)
-{
-  interval newl;
-
-  newl.start = (ILENGTH(l) / n) * p;
-  newl.end   = (ILENGTH(l) / n) * (p+1);
-
-  return newl;
-}
-
-int engine(interval l, multibsp_tree_node_t t) 
-{
-  int                   i;
-  int                   length;
-  size_t                size = 10;
-  size_t                pin[2] = { 0, 1} ;
-    
-  int                   n, p;
-  double                r; 
-  double*               rlevel;
-  interval              interval;
-  multibsp_tree_node_t  tnew;
-
-
-  mcbsp_set_pinning( pin, 2);
   bsp_begin(bsp_nprocs());
-
-  bsp_push_reg( t, sizeof(multibsp_tree_node) );
-  bsp_push_reg( &l, sizeof(interval) );
-  bsp_sync();
   if (bsp_pid() > 0) {
-    bsp_direct_get(0, t, 0, t, sizeof(multibsp_tree_node));
-    bsp_direct_get(0, &l, 0, &l, sizeof(interval));
+    tree = multibsp_array_new(10);
   }
+
+  bsp_push_reg(tree, sizeof(multibsp_array_node)*10);
+  bsp_push_reg(&level, SZINT);
+  bsp_push_reg(&parentid, SZINT);
   bsp_sync();
-  log_info("%d", t->length);
 
-  p      = bsp_pid();
-  n      = bsp_nprocs();
-  rlevel = vecallocd(n);
-  r      = 0;
-  tnew   = NULL;
+  if (bsp_pid() > 0) {
+    bsp_direct_get(0, tree , 0, tree, sizeof(multibsp_array_node)*10);
+    bsp_direct_get(0, &level, 0, &level, SZINT);
+    bsp_direct_get(0, &parentid, 0, &parentid, SZINT);
+  }
 
+  bsp_sync();
 
-  log_info("<pos: %d, pid: %d>", t->length, bsp_pid() );
+  parentid = bsp_pid();
 
-  if (n > 0)  {
-    interval  = partition(l, p, n);
-    tnew      = t->sons[p];
-    bsp_init( &engine, 0, NULL ); 
-    rlevel[p] = engine(interval, tnew);
-    bsp_sync();
-    // barrier y luego reducir
-    rlevel[p] = reduce(rlevel, n);
-
-
-    bsp_end();
+  if (level == 0) {
+    log_info("l: %d, n: %d, p: %d - %s - %s", level, bsp_nprocs(), bsp_pid(), "NULL", multibsp_array_print(tree) );
   } else {
 
-    r         = work(interval);
+    level--;
+
+    pin = multibsp_get_index_with_level_id(tree, level, bsp_pid());
+    log_info("l: %d, n: %d, p: %d - %s - %s", level, bsp_nprocs(), bsp_pid(), sarrayt(pin,2), multibsp_array_print(tree) );
+
+    bsp_sync();
+    bsp_init( &engine, 0, NULL);
+    mcbsp_set_pinning(pin, 2);
+    engine(tree, level, parentid);
   }
 
-  return r;
+  bsp_sync();
 
+  bsp_end();
+  return 0.0;
 }
 
 
 int main(int argc, char **argv)
 {
 
-  int         i = 0;
   double      r = 0;
-  interval  l;
+  double*     rlevel;
+  multibsp_tree_node_t ttt = multibsp_discover_new();
+  multibsp_array_node_t t;
+  t = multibsp_array_new(10);
+  t = multibsp_to_array(ttt, t);
 
-  int         tree[] = {0, 0, 2, 3, 1, 2, 3 };
+  mcbsp_set_affinity_mode( MANUAL_AFFINITY ); 
+  bsp_init( &engine, 0, NULL );
 
-  mcbsp_set_affinity_mode( MANUAL_AFFINITY ); // go MANUAL affinity
+  size_t* pin = (size_t*) malloc (sizeof(size_t)*2);
+  pin = multibsp_get_index_with_level_id(t, 1, 0);
 
-  data = vecallocd(N); for (i=0; i<N; i++) data[i] = 1;
-
-  l.start = 0; l.end   = N;
-  bsp_init( &engine, 0, NULL ); 
-  r = engine(l, tree);
-  log_info("Result: %f", r);
-
-  // freeing memory
-  free(data);
-  free(tree);
+  
+  log_info("l: %d, n: %d, p: %d - %s - %s", 2, 2, 0, sarrayt(pin, 2), multibsp_array_print(t));
+  mcbsp_set_pinning(pin, 2);
+  engine(t, 1, 0); 
 
 
   exit(0);
