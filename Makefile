@@ -1,7 +1,7 @@
-MCBSPLIB=../lib/MulticoreBSP-for-C/lib/libmcbsp1.2.0.a
-MCBSPINCLUDE=../lib/MulticoreBSP-for-C
-LUAINCLUDE=../lib/lua-5.2.3/src 
-LUALIB=../lib/lua-5.2.3/src
+MCBSPLIB=../libs/mcbsp/lib/libmcbsp1.2.0.a
+MCBSPINCLUDE=../libs/mcbsp
+LUAINCLUDE=../libs/lua/src
+LUALIB=../libs/lua/src
 
 
 CC=gcc -fdiagnostics-color=auto
@@ -13,10 +13,10 @@ OBJ2= test_with_tree.o mbspdiscover.o mbsputil.o
 
 all: mbspengine
 
-tree: $(OBJ3) 
+tree: $(OBJ3)
 	$(CC) $(OBJ2) $(LFLAGS) -o tree.exe
 
-test_with_tree.o: test_with_tree.c 
+test_with_tree.o: test_with_tree.c
 	$(CC) $(CFLAGS) -c test_with_tree.c
 
 
@@ -27,7 +27,7 @@ mbspengine: $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(LFLAGS) -o embsp.exe
 
 
-mbspengine.o: mbspengine.c 
+mbspengine.o: mbspengine.c
 	$(CC) $(CFLAGS) -c mbspengine.c
 
 mbspdiscover.o: mbspdiscover.c mbspdiscover.h
@@ -37,4 +37,4 @@ mbsputil.o: mbsputil.c  mbsputil.h
 	$(CC) $(CFLAGS) -c mbsputil.c
 
 clean:
-	rm -f *.o embsp	
+	rm -f *.o embsp
