@@ -13,19 +13,14 @@ OBJ2= test_with_tree.o mbspdiscover.o mbsputil.o
 
 all: mbspengine
 
-tree: $(OBJ3)
-	$(CC) $(OBJ2) $(LFLAGS) -o tree.exe
+#tree: $(OBJ3)
+#	$(CC) $(OBJ2) $(LFLAGS) -o tree.exe
 
 test_with_tree.o: test_with_tree.c
 	$(CC) $(CFLAGS) -c test_with_tree.c
 
-
-
-
-
 mbspengine: $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(LFLAGS) -o embsp.exe
-
 
 mbspengine.o: mbspengine.c
 	$(CC) $(CFLAGS) -c mbspengine.c
