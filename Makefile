@@ -2,11 +2,13 @@ MCBSPLIB=../libs/mcbsp/lib/libmcbsp1.2.0.a
 MCBSPINCLUDE=../libs/mcbsp
 LUAINCLUDE=../libs/lua/src
 LUALIB=../libs/lua/src
+HWLOCLIB=../libs/hwloc/src/.libs/libhwloc.so
+HWLOCINCLUDE=../libs/hwloc/include
 
 
 CC=gcc -fdiagnostics-color=auto
-CFLAGS= -g -I $(MCBSPINCLUDE) -I $(LUAINCLUDE)
-LFLAGS=$(MCBSPLIB) -L $(LUALIB) -llua -ldl -pthread -lm -lrt -lhwloc
+CFLAGS= -g -I $(MCBSPINCLUDE) -I $(LUAINCLUDE) -I $(HWLOCINCLUDE)
+LFLAGS=$(MCBSPLIB) $(HWLOCLIB) -L $(LUALIB) -llua -ldl -pthread -lm -lrt -lhwloc
 OBJ= mbspengine.o mbspdiscover.o mbsputil.o
 OBJ2= test_with_tree.o mbspdiscover.o mbsputil.o
 
